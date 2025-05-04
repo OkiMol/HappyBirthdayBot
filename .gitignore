@@ -1,0 +1,8 @@
+.env.development
+
+.venv/
+.idea/
+venv/
+__pycache__
+
+birthdays.db
