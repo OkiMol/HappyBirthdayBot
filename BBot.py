@@ -4,10 +4,6 @@ import os
 from dotenv import load_dotenv
 from BBotFuncs import *
 
-# load_dotenv('.env.development')
-load_dotenv('.env')
-
-# токен API от BotFather
 INSTRUCTION_URL = os.getenv('INSTRUCTION_URL')
 TOKEN = os.getenv('TOKEN')
 BOT_USERNAME = os.getenv('BOT_USERNAME')

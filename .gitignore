@@ -1,8 +1,11 @@
 .env.development
+.env
+Dockerfile
+.dockerignore
 
 .venv/
 .idea/
 venv/
 __pycache__
 
-birthdays.db
+*.db
