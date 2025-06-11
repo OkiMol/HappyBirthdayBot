@@ -1,7 +1,5 @@
 .env.development
 .env
-Dockerfile
-.dockerignore
 
 .venv/
 .idea/
