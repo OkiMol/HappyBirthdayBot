@@ -8,6 +8,7 @@ from telegram.ext import ContextTypes, CallbackContext, ConversationHandler
 import asyncio
 from BBotButtons import add_inline_keyboard, reply_markup, instruction_inline_keyboard, support_inline_keyboard
 import random
+import os
 
 async def delete_message_after_delay(context: ContextTypes.DEFAULT_TYPE, chat_id, message_id, delay=0):
     await asyncio.sleep(delay)  # Ждём указанное количество секунд
