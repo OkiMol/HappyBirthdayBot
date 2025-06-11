@@ -114,9 +114,10 @@ async def handle_menu_buttons(update: Update, context: CallbackContext):
         asyncio.create_task(
             delete_message_after_delay(context, update.message.chat_id, update.message.message_id))
 
+DB_PATH = os.path.join("/app/db", "birthdays.db")
 # Подключение к базе данных
 def init_db():
-    conn = sqlite3.connect("birthdays.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     # Создаем таблицу дней рождения
     cursor.execute("""
@@ -145,7 +146,7 @@ async def set_birthday_start(update: Update, context: ContextTypes.DEFAULT_TYPE)
     chat_id = update.message.chat_id
     user_id = update.message.from_user.id
     # Подключаемся к базе данных
-    conn = sqlite3.connect("birthdays.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     try:
@@ -208,7 +209,7 @@ async def set_birthday_save(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.message.from_user.id
         username = update.message.from_user.username
 
-        conn = sqlite3.connect("birthdays.db")
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         try:
             cursor.execute("""
@@ -260,7 +261,7 @@ async def remove_birthday_save(update: Update, context: ContextTypes.DEFAULT_TYP
                 target_username = text[entity.offset:entity.offset + entity.length].lstrip("@")
                 try:
                     # Ищем пользователя в базе данных по username
-                    conn = sqlite3.connect("birthdays.db")
+                    conn = sqlite3.connect(DB_PATH)
                     cursor = conn.cursor()
                     cursor.execute("""
                             SELECT user_id FROM birthdays
@@ -284,7 +285,7 @@ async def remove_birthday_save(update: Update, context: ContextTypes.DEFAULT_TYP
             return ConversationHandler.END
 
     # Теперь у нас есть target_identifier (user_id), удаляем запись
-    conn = sqlite3.connect("birthdays.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
             DELETE FROM birthdays
@@ -337,7 +338,7 @@ async def set_congratulation_time_save(update: Update, context: ContextTypes.DEF
             return ConversationHandler.END
 
         chat_id = update.message.chat_id
-        conn = sqlite3.connect("birthdays.db")
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         # Обновляем или создаем запись с временем поздравлений
         cursor.execute("""
@@ -387,7 +388,7 @@ async def handle_my_chat_member_update(update: Update, context: ContextTypes.DEF
 
     # Обработка добавления бота (как и раньше)
     if update.my_chat_member.new_chat_member.user.id == bot_id and new_status in ["member", "administrator"]:
-        conn = sqlite3.connect("birthdays.db")
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         try:
             cursor.execute("""
@@ -400,7 +401,8 @@ async def handle_my_chat_member_update(update: Update, context: ContextTypes.DEF
 
         await context.bot.send_message(
             chat_id=chat.id,
-            text="🎉 Здравствуйте! Я бот для поздравлений с Днём рождения в чате!\n\n"
+            text=
+            "🎉 Здравствуйте! Я бот для поздравлений с Днём рождения в чате!\n\n"
             "📋 Вот список доступных команд:\n"
             "- /setbirthday — установить свой день рождения.\n"
             "- /listbirthdays — показать список дней рождения в этом чате.\n"
@@ -415,7 +417,7 @@ async def handle_my_chat_member_update(update: Update, context: ContextTypes.DEF
 # Вывод списка дней рождения
 async def list_birthdays(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
-    conn = sqlite3.connect("birthdays.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT user_id, birthday FROM birthdays WHERE chat_id = ?", (chat_id,))
     rows = cursor.fetchall()
@@ -435,7 +437,7 @@ async def list_birthdays(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def show_congratulation_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.message.chat_id
-    conn = sqlite3.connect("birthdays.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     cursor.execute("SELECT congratulation_time FROM chat_settings WHERE chat_id = ?", (chat_id,))
@@ -457,11 +459,14 @@ async def check_birthdays(context: ContextTypes.DEFAULT_TYPE):
     current_time = datetime.now(moscow_tz).strftime("%H:%M")  # Текущее время
     today = datetime.now(moscow_tz).strftime("%d.%m")  # Текущая дата
     current_year = datetime.now(moscow_tz).year  # Текущий год
-    conn = sqlite3.connect("birthdays.db")
+
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
+
     # Получаем все чаты с их временами поздравлений
     cursor.execute("SELECT chat_id, congratulation_time FROM chat_settings")
     chat_times = dict(cursor.fetchall())
+
     for chat_id, time in chat_times.items():
         if time == current_time:
             # Проверяем дни рождения для этого чата
@@ -501,7 +506,7 @@ async def handle_left_chat_member(update: Update, context: ContextTypes.DEFAULT_
     user = update.message.left_chat_member  # Пользователь, который покинул чат
     user_id = user.id
 
-    conn = sqlite3.connect("birthdays.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
         cursor.execute("""
